@@ -48,15 +48,6 @@ public class DraggableDigit : MonoBehaviour,
         if (img != null)
             img.raycastTarget = true;
     }
-   // public int digitValue;
-
-    public void SetDigit(int value)
-    {
-        digitValue = value;
-
-        TextMeshProUGUI txt = GetComponentInChildren<TextMeshProUGUI>();
-        if (txt) txt.text = value.ToString();
-    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {

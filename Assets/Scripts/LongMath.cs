@@ -90,10 +90,10 @@ public class LongMath : MonoBehaviour
         }
 
         // rebuild answer rows
-       // lmBuilder.SpawnRowsForBottomNumber(bottomNumber);
+        lmBuilder.SpawnRowsForBottomNumber(bottomNumber);
 
-       // answerRows = lmBuilder.longMath.answerRows;
-        //finalAnswerSlots = lmBuilder.longMath.finalAnswerSlots;
+        answerRows = lmBuilder.longMath.answerRows;
+        finalAnswerSlots = lmBuilder.longMath.finalAnswerSlots;
 
         ResetState();
 

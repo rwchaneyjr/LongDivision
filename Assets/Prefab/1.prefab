@@ -11,8 +11,7 @@ GameObject:
   - component: {fileID: 4707543317911164072}
   - component: {fileID: 3114002399033771483}
   - component: {fileID: 991720186885154757}
-  - component: {fileID: 7719814213457556071}
-  - component: {fileID: 4750247604429882350}
+  - component: {fileID: 9025073778767180585}
   m_Layer: 5
   m_Name: 1
   m_TagString: Untagged
@@ -78,7 +77,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7719814213457556071
+--- !u!114 &9025073778767180585
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -87,28 +86,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 5241055328173753232}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95141b3723a6c4e4a88b4873f494f2ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  slotText: {fileID: 0}
-  isInputSlot: 0
-  isCarrySlot: 0
-  isLocked: 0
-  digitValue: -1
---- !u!114 &4750247604429882350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5241055328173753232}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9185857bf889987479a442ee930d0993, type: 3}
+  m_Script: {fileID: 11500000, guid: 11cf21f07eb20524b8545e9cd7ec031d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   digitValue: 1
-  label: {fileID: 967171067809973603}
+  isPaletteDigit: 0
   placedInSlot: 0
 --- !u!1 &8694986122303486608
 GameObject:
@@ -121,6 +103,7 @@ GameObject:
   - component: {fileID: 7773581032945270253}
   - component: {fileID: 5418101091107264752}
   - component: {fileID: 967171067809973603}
+  - component: {fileID: 8148372864600628856}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -244,3 +227,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &8148372864600628856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8694986122303486608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11cf21f07eb20524b8545e9cd7ec031d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  digitValue: 1
+  isPaletteDigit: 0
+  placedInSlot: 0
