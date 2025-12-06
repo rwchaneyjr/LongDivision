@@ -1,223 +1,160 @@
 ﻿using UnityEngine;
 using TMPro;
 
-/// <summary>
-/// Builds ONLY the needed UI rows for long multiplication.
-/// Static rows on Start, dynamic rows after STEP.
-/// </summary>
 public class LMBuilder : MonoBehaviour
 {
-    // ---------------- PREFABS ----------------
     [Header("Prefabs")]
     public DigitDropSlot digitSlotPrefab;
     public DraggableDigit draggableDigitPrefab;
 
-    // ---------------- ROW TEMPLATES ----------------
-    [Header("Row Templates")]
-    public RectTransform carryRowTemplate;
-    public RectTransform answerRowTemplate;
+    [Header("Row Parents")]
+    public RectTransform quotientRowParent;   // TOP row (answer)
+    public RectTransform dividendRowParent;   // SECOND row
+    public RectTransform divisorLabelParent;  // LEFT side label (46 )
+    public RectTransform subtractionRowsParent; // Where we spawn subtract rows
 
-    // ---------------- INPUT ROWS ----------------
-    [Header("Input Rows")]
-    public RectTransform topRowParent;
-    public RectTransform bottomRowParent;
-
-    // ---------------- DIGIT TRAY ----------------
     [Header("Digit Tray")]
-    public RectTransform draggableDigitsParent;
+    public RectTransform digitTrayParent;
 
-    // ---------------- LAYOUT ----------------
     [Header("Layout")]
+    public int maxDigits = 9;
     public float cellSize = 200f;
     public float cellSpacing = 20f;
-    public float rowSpacingMultiplier = 1.1f;
-    public int maxDigits = 9;
+    public float rowSpacing = 220f;
 
-    // ---------------- REFERENCES ----------------
     [Header("References")]
-    public LongMath longMath;
-    public BoardVerticalShift boardVerticalShift;
+    public LongDivision longDivision;
 
-    // ---------------- INTERNAL ----------------
-    float computedRowSpacing;
     Vector2[] digitHomePositions;
 
-    // =====================================================
     void Start()
     {
-        if (longMath == null)
-            longMath = GetComponent<LongMath>();
+        if (longDivision == null)
+            longDivision = GetComponent<LongDivision>();
 
         digitHomePositions = new Vector2[10];
 
-        ComputeRowSpacing();
-
-        BuildCarryRow();
-        BuildInputRows();
+        BuildQuotientRow();
+        BuildDividendRow();
         BuildDigitTray();
 
-        // ✅ DO NOT build answer rows here
-        answerRowTemplate.gameObject.SetActive(false);
+        // Tell LongDivision which slots belong where
+        longDivision.topInputSlots = quotientSlots;
+        longDivision.bottomInputSlots = dividendSlots;
+        longDivision.answerRows = subtractionRows;
+        longDivision.finalAnswerSlots = finalRow;
     }
 
-    // =====================================================
-    // ✅ CALLED ONLY AFTER STEP (numbers known)
-    public void SpawnRowsForBottomNumber(int bottomNumber)
+    // ------------------ ROW ARRAYS --------------------
+    DigitDropSlot[] quotientSlots;
+    DigitDropSlot[] dividendSlots;
+    DigitDropSlot[][] subtractionRows;
+    DigitDropSlot[] finalRow;
+
+    // ------------------ ROW BUILDING ------------------
+
+    void BuildQuotientRow()
     {
-        int bottomDigits = Mathf.Abs(bottomNumber).ToString().Length;
-
-        ClearOldAnswerRows();
-
-        // ---------------- PARTIAL PRODUCTS ----------------
-        longMath.answerRows = new DigitDropSlot[bottomDigits][];
-
-        for (int r = 0; r < bottomDigits; r++)
-        {
-            RectTransform row = SpawnRow(answerRowTemplate, r);
-
-            DigitDropSlot[] slots = new DigitDropSlot[maxDigits];
-            for (int c = 0; c < maxDigits; c++)
-                slots[c] = SpawnSlot(row, c, false);
-
-            longMath.answerRows[r] = slots;
-        }
-
-        // ---------------- FINAL ANSWER ROW ----------------
-        RectTransform finalRow =
-            SpawnRow(answerRowTemplate, bottomDigits);
-
-        longMath.finalAnswerSlots = new DigitDropSlot[maxDigits];
-        for (int c = 0; c < maxDigits; c++)
-            longMath.finalAnswerSlots[c] = SpawnSlot(finalRow, c, false);
-
-        // ✅ Optional board lift
-        if (boardVerticalShift != null)
-            boardVerticalShift.ShiftUpForNewRow();
-    }
-
-    // =====================================================
-    void BuildInputRows()
-    {
-        longMath.topInputSlots = new DigitDropSlot[maxDigits];
-        longMath.bottomInputSlots = new DigitDropSlot[maxDigits];
+        quotientSlots = new DigitDropSlot[maxDigits];
 
         for (int i = 0; i < maxDigits; i++)
         {
-            longMath.topInputSlots[i] =
-                SpawnSlot(topRowParent, i, false);
+            var slot = Instantiate(digitSlotPrefab, quotientRowParent);
+            slot.GetComponent<RectTransform>().anchoredPosition =
+                new Vector2(i * (cellSize + cellSpacing), 0);
 
-            longMath.bottomInputSlots[i] =
-                SpawnSlot(bottomRowParent, i, false);
+            slot.isCarrySlot = false;
+            quotientSlots[i] = slot;
         }
     }
 
-    void BuildCarryRow()
+    void BuildDividendRow()
     {
-        longMath.carrySlots = new DigitDropSlot[maxDigits];
+        dividendSlots = new DigitDropSlot[maxDigits];
 
         for (int i = 0; i < maxDigits; i++)
         {
-            var s = SpawnSlot(carryRowTemplate, i, true);
-            if (s.slotText != null)
-                s.slotText.text = "C";
+            var slot = Instantiate(digitSlotPrefab, dividendRowParent);
+            slot.GetComponent<RectTransform>().anchoredPosition =
+                new Vector2(i * (cellSize + cellSpacing), 0);
 
-            longMath.carrySlots[i] = s;
+            slot.isCarrySlot = false;
+            dividendSlots[i] = slot;
         }
     }
 
-    // =====================================================
+    // Build 3 subtraction rows + 1 final row
+    void BuildSubtractionRows()
+    {
+        subtractionRows = new DigitDropSlot[3][]; // 3 rows
+        for (int r = 0; r < 3; r++)
+        {
+            subtractionRows[r] = new DigitDropSlot[maxDigits];
+
+            GameObject rowObj = new GameObject($"SubRow{r}", typeof(RectTransform));
+            RectTransform row = rowObj.GetComponent<RectTransform>();
+            row.SetParent(subtractionRowsParent);
+            row.localScale = Vector3.one;
+            row.anchoredPosition = new Vector2(0, -rowSpacing * (r + 1));
+
+            for (int i = 0; i < maxDigits; i++)
+            {
+                var slot = Instantiate(digitSlotPrefab, row);
+                slot.GetComponent<RectTransform>().anchoredPosition =
+                    new Vector2(i * (cellSize + cellSpacing), 0);
+
+                subtractionRows[r][i] = slot;
+            }
+        }
+
+        finalRow = new DigitDropSlot[maxDigits];
+        GameObject fObj = new GameObject("FinalRow", typeof(RectTransform));
+        RectTransform fRow = fObj.GetComponent<RectTransform>();
+        fRow.SetParent(subtractionRowsParent);
+        fRow.localScale = Vector3.one;
+        fRow.anchoredPosition = new Vector2(0, -rowSpacing * 4);
+
+        for (int i = 0; i < maxDigits; i++)
+        {
+            var slot = Instantiate(digitSlotPrefab, fRow);
+            slot.GetComponent<RectTransform>().anchoredPosition =
+                new Vector2(i * (cellSize + cellSpacing), 0);
+
+            finalRow[i] = slot;
+        }
+    }
+
+    // ----------------- DIGIT TRAY --------------------
+
     void BuildDigitTray()
     {
-        float total =
-            10 * cellSize + 9 * cellSpacing;
-
+        float total = 10 * cellSize + 9 * cellSpacing;
         float startX = -total / 2f;
 
         for (int i = 0; i < 10; i++)
         {
-            Vector2 pos =
-                new Vector2(startX + i * (cellSize + cellSpacing), 0);
+            Vector2 pos = new Vector2(startX + i * (cellSize + cellSpacing), 0);
 
             digitHomePositions[i] = pos;
             SpawnDigit(i, pos);
         }
     }
 
-    // =====================================================
-    RectTransform SpawnRow(RectTransform template, int index)
-    {
-        RectTransform row =
-            Instantiate(template, template.parent);
-
-        row.anchoredPosition =
-            template.anchoredPosition +
-            Vector2.down * index * computedRowSpacing;
-
-        row.gameObject.SetActive(true);
-        return row;
-    }
-
-    DigitDropSlot SpawnSlot(RectTransform parent, int index, bool carry)
-    {
-        var slot = Instantiate(digitSlotPrefab, parent);
-        slot.isCarrySlot = carry;
-        slot.mathManager = longMath;
-
-        slot.GetComponent<RectTransform>().anchoredPosition =
-            new Vector2(index * (cellSize + cellSpacing), 0);
-
-        return slot;
-    }
-
-    // =====================================================
     void SpawnDigit(int value, Vector2 pos)
     {
-        var d = Instantiate(draggableDigitPrefab, draggableDigitsParent);
-
+        var d = Instantiate(draggableDigitPrefab, digitTrayParent);
         d.digitValue = value;
+        d.GetComponentInChildren<TextMeshProUGUI>().text = value.ToString();
 
-        var txt = d.GetComponentInChildren<TextMeshProUGUI>();
-        if (txt != null)
-            txt.text = value.ToString();
-
-        d.onTaken = OnDigitTaken;
         d.GetComponent<RectTransform>().anchoredPosition = pos;
+        d.onTaken = OnDigitTaken;
     }
 
-    // Called once when a digit leaves the tray
-    void OnDigitTaken(DraggableDigit taken)
+    void OnDigitTaken(DraggableDigit digit)
     {
-        if (taken == null) return;
+        if (digit == null) return;
+        int v = digit.digitValue;
 
-        int value = taken.digitValue;
-        if (value < 0 || value >= digitHomePositions.Length) return;
-
-        SpawnDigit(value, digitHomePositions[value]);
-    }
-
-    // =====================================================
-    void ClearOldAnswerRows()
-    {
-        if (longMath.answerRows != null)
-        {
-            foreach (var row in longMath.answerRows)
-                if (row != null)
-                    foreach (var s in row)
-                        if (s != null)
-                            Destroy(s.gameObject);
-        }
-
-        if (longMath.finalAnswerSlots != null)
-        {
-            foreach (var s in longMath.finalAnswerSlots)
-                if (s != null)
-                    Destroy(s.gameObject);
-        }
-    }
-
-    void ComputeRowSpacing()
-    {
-        computedRowSpacing =
-            cellSize * rowSpacingMultiplier;
+        SpawnDigit(v, digitHomePositions[v]);
     }
 }

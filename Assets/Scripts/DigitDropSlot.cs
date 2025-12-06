@@ -18,7 +18,7 @@ public class DigitDropSlot : MonoBehaviour, IDropHandler
     public Image background;
 
     [HideInInspector]
-    public LongMath mathManager;   // set by LMBuilder
+    public LongDivision mathManager;   // set by LMBuilder
 
     // internal state
     bool filled = false;
@@ -50,8 +50,7 @@ public class DigitDropSlot : MonoBehaviour, IDropHandler
             slotText.text = drag.digitValue.ToString();
 
         // tell LongMath that something changed (safe no-op right now)
-        if (mathManager != null)
-            mathManager.NotifySlotFilled(this);
+      
     }
 
     public void SetHighlight(Color color)
