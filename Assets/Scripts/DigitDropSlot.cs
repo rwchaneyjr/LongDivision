@@ -11,14 +11,9 @@ public class DigitDropSlot : MonoBehaviour, IDropHandler
     [Header("Is this a carry slot?")]
     public bool isCarrySlot = false;
 
-    [Header("Text to show ? or digit")]
-    public TextMeshProUGUI slotText;
-
-    [Header("Background image for color change")]
-    public Image background;
-
-    [HideInInspector]
-    public LongDivision mathManager;   // set by LMBuilder
+    [Header("Display")]
+    public TextMeshProUGUI slotText;      // number that shows in the slot
+    public Image background;              // highlight background
 
     // internal state
     bool filled = false;
@@ -30,29 +25,37 @@ public class DigitDropSlot : MonoBehaviour, IDropHandler
             baseColor = background.color;
     }
 
+    // ------------------------------------------------------------
+    // DRAG-AND-DROP HANDLER
+    // ------------------------------------------------------------
     public void OnDrop(PointerEventData eventData)
     {
-        if (eventData.pointerDrag == null) return;
+        if (eventData.pointerDrag == null)
+            return;
 
-        DraggableDigit drag =
-            eventData.pointerDrag.GetComponent<DraggableDigit>();
+        DraggableDigit drag = eventData.pointerDrag.GetComponent<DraggableDigit>();
+        if (drag == null)
+            return;
 
-        if (drag == null) return;
+        // Optional: enforce expected digit
+        if (expectedDigit >= 0 && drag.digitValue != expectedDigit)
+        {
+            // You could play a "wrong" sound here later
+            return;
+        }
 
-        // (optional) if you want to enforce correct digit:
-        // if (expectedDigit >= 0 && drag.digitValue != expectedDigit) return;
-
-        // snap the digit into this slot
+        // Snap the dragged digit into this slot
         drag.LockInSlot(transform);
         filled = true;
 
+        // Update visible number
         if (slotText != null)
             slotText.text = drag.digitValue.ToString();
-
-        // tell LongMath that something changed (safe no-op right now)
-      
     }
 
+    // ------------------------------------------------------------
+    // HIGHLIGHTING
+    // ------------------------------------------------------------
     public void SetHighlight(Color color)
     {
         if (background != null)
@@ -63,5 +66,26 @@ public class DigitDropSlot : MonoBehaviour, IDropHandler
     {
         if (background != null)
             background.color = baseColor;
+    }
+
+    // ------------------------------------------------------------
+    // RESET SLOT (useful for new problems or step reset)
+    // ------------------------------------------------------------
+    public void ClearSlot()
+    {
+        filled = false;
+
+        if (slotText != null)
+            slotText.text = "";
+
+        ClearHighlight();
+    }
+
+    // ------------------------------------------------------------
+    // OPTIONAL: Check if slot is filled
+    // ------------------------------------------------------------
+    public bool IsFilled()
+    {
+        return filled;
     }
 }

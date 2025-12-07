@@ -3,55 +3,66 @@ using TMPro;
 
 public class LMBuilder : MonoBehaviour
 {
-    [Header("Prefabs")]
+    // ------------------- PREFABS -------------------
     public DigitDropSlot digitSlotPrefab;
     public DraggableDigit draggableDigitPrefab;
 
+    // ------------------- ROW PARENTS -------------------
     [Header("Row Parents")]
-    public RectTransform quotientRowParent;   // TOP row (answer)
-    public RectTransform dividendRowParent;   // SECOND row
-    public RectTransform divisorLabelParent;  // LEFT side label (46 )
-    public RectTransform subtractionRowsParent; // Where we spawn subtract rows
+    public RectTransform quotientRowParent;
+    public RectTransform divisorRowParent;
+    public RectTransform dividendRowParent;
+    public RectTransform subtractionRowsParent;
 
     [Header("Digit Tray")]
     public RectTransform digitTrayParent;
 
-    [Header("Layout")]
+    [Header("Manual Bracket + Line")]
+    public TMP_Text rightBracketText;        // <-- YOU drag a TMP Text here
+    public RectTransform divisionLine;       // <-- YOU drag an Image/RectTransform here
+
+    // ------------------- SETTINGS -------------------
     public int maxDigits = 9;
     public float cellSize = 200f;
     public float cellSpacing = 20f;
-    public float rowSpacing = 220f;
+    public float rowSpacing = 200f;
 
     [Header("References")]
     public LongDivision longDivision;
 
-    Vector2[] digitHomePositions;
+    // ------------------- INTERNAL -------------------
+    DigitDropSlot[] quotientSlots;
+    DigitDropSlot[] divisorSlots;
+    DigitDropSlot[] dividendSlots;
+    DigitDropSlot[][] subtractionRows;
+
+    Vector2[] homePositions;
+
+    // ==============================================================
 
     void Start()
     {
         if (longDivision == null)
             longDivision = GetComponent<LongDivision>();
 
-        digitHomePositions = new Vector2[10];
-
         BuildQuotientRow();
+        BuildDivisorRow();
         BuildDividendRow();
+        BuildSubtractionRows();
         BuildDigitTray();
 
-        // Tell LongDivision which slots belong where
-        longDivision.topInputSlots = quotientSlots;
-        longDivision.bottomInputSlots = dividendSlots;
+        // Pass references directly (no generation, no auto placement)
+        longDivision.quotientSlots = quotientSlots;
+        longDivision.divisorSlots = divisorSlots;
+        longDivision.dividendSlots = dividendSlots;
         longDivision.answerRows = subtractionRows;
-        longDivision.finalAnswerSlots = finalRow;
+        longDivision.rightBracketText = rightBracketText;
+        longDivision.divisionLine = divisionLine;
+
+        Debug.Log("LMBuilder: Division board created (manual bracket + line).");
     }
 
-    // ------------------ ROW ARRAYS --------------------
-    DigitDropSlot[] quotientSlots;
-    DigitDropSlot[] dividendSlots;
-    DigitDropSlot[][] subtractionRows;
-    DigitDropSlot[] finalRow;
-
-    // ------------------ ROW BUILDING ------------------
+    // ==============================================================
 
     void BuildQuotientRow()
     {
@@ -60,13 +71,28 @@ public class LMBuilder : MonoBehaviour
         for (int i = 0; i < maxDigits; i++)
         {
             var slot = Instantiate(digitSlotPrefab, quotientRowParent);
-            slot.GetComponent<RectTransform>().anchoredPosition =
-                new Vector2(i * (cellSize + cellSpacing), 0);
-
-            slot.isCarrySlot = false;
+            RectTransform rt = slot.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(i * (cellSize + cellSpacing), 0);
             quotientSlots[i] = slot;
         }
     }
+
+    // ==============================================================
+
+    void BuildDivisorRow()
+    {
+        divisorSlots = new DigitDropSlot[2];
+
+        for (int i = 0; i < 2; i++)
+        {
+            var slot = Instantiate(digitSlotPrefab, divisorRowParent);
+            RectTransform rt = slot.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(i * (cellSize + cellSpacing), 0);
+            divisorSlots[i] = slot;
+        }
+    }
+
+    // ==============================================================
 
     void BuildDividendRow()
     {
@@ -75,18 +101,18 @@ public class LMBuilder : MonoBehaviour
         for (int i = 0; i < maxDigits; i++)
         {
             var slot = Instantiate(digitSlotPrefab, dividendRowParent);
-            slot.GetComponent<RectTransform>().anchoredPosition =
-                new Vector2(i * (cellSize + cellSpacing), 0);
-
-            slot.isCarrySlot = false;
+            RectTransform rt = slot.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(i * (cellSize + cellSpacing), 0);
             dividendSlots[i] = slot;
         }
     }
 
-    // Build 3 subtraction rows + 1 final row
+    // ==============================================================
+
     void BuildSubtractionRows()
     {
-        subtractionRows = new DigitDropSlot[3][]; // 3 rows
+        subtractionRows = new DigitDropSlot[3][];
+
         for (int r = 0; r < 3; r++)
         {
             subtractionRows[r] = new DigitDropSlot[maxDigits];
@@ -100,42 +126,26 @@ public class LMBuilder : MonoBehaviour
             for (int i = 0; i < maxDigits; i++)
             {
                 var slot = Instantiate(digitSlotPrefab, row);
-                slot.GetComponent<RectTransform>().anchoredPosition =
-                    new Vector2(i * (cellSize + cellSpacing), 0);
-
+                RectTransform rt = slot.GetComponent<RectTransform>();
+                rt.anchoredPosition = new Vector2(i * (cellSize + cellSpacing), 0);
                 subtractionRows[r][i] = slot;
             }
         }
-
-        finalRow = new DigitDropSlot[maxDigits];
-        GameObject fObj = new GameObject("FinalRow", typeof(RectTransform));
-        RectTransform fRow = fObj.GetComponent<RectTransform>();
-        fRow.SetParent(subtractionRowsParent);
-        fRow.localScale = Vector3.one;
-        fRow.anchoredPosition = new Vector2(0, -rowSpacing * 4);
-
-        for (int i = 0; i < maxDigits; i++)
-        {
-            var slot = Instantiate(digitSlotPrefab, fRow);
-            slot.GetComponent<RectTransform>().anchoredPosition =
-                new Vector2(i * (cellSize + cellSpacing), 0);
-
-            finalRow[i] = slot;
-        }
     }
 
-    // ----------------- DIGIT TRAY --------------------
+    // ==============================================================
 
     void BuildDigitTray()
     {
-        float total = 10 * cellSize + 9 * cellSpacing;
-        float startX = -total / 2f;
+        homePositions = new Vector2[10];
+
+        float totalWidth = 10 * cellSize + 9 * cellSpacing;
+        float startX = -totalWidth / 2f;
 
         for (int i = 0; i < 10; i++)
         {
             Vector2 pos = new Vector2(startX + i * (cellSize + cellSpacing), 0);
-
-            digitHomePositions[i] = pos;
+            homePositions[i] = pos;
             SpawnDigit(i, pos);
         }
     }
@@ -146,15 +156,14 @@ public class LMBuilder : MonoBehaviour
         d.digitValue = value;
         d.GetComponentInChildren<TextMeshProUGUI>().text = value.ToString();
 
-        d.GetComponent<RectTransform>().anchoredPosition = pos;
+        RectTransform rt = d.GetComponent<RectTransform>();
+        rt.anchoredPosition = pos;
+
         d.onTaken = OnDigitTaken;
     }
 
     void OnDigitTaken(DraggableDigit digit)
     {
-        if (digit == null) return;
-        int v = digit.digitValue;
-
-        SpawnDigit(v, digitHomePositions[v]);
+        SpawnDigit(digit.digitValue, homePositions[digit.digitValue]);
     }
 }

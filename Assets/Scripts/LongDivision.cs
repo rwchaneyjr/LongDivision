@@ -3,144 +3,139 @@ using TMPro;
 
 public class LongDivision : MonoBehaviour
 {
-    [Header("LMBuilder Connections")]
-    public DigitDropSlot[] topInputSlots;       // quotient row (top)
-    public DigitDropSlot[] bottomInputSlots;    // dividend row
-    public DigitDropSlot[][] answerRows;        // subtraction rows
-    public DigitDropSlot[] finalAnswerSlots;    // remainder row
+    // -------------------------------------------------
+    // ROWS OF DIGITS (hooked up by LMBuilder at runtime)
+    // -------------------------------------------------
+    [Header("Board Digit Rows")]
+    public DigitDropSlot[] divisorSlots;       // left of bracket (e.g. 4, 6)
+    public DigitDropSlot[] dividendSlots;      // right of bracket (all dividend digits)
+    public DigitDropSlot[] quotientSlots;      // top row (final answer / quotient)
+    public DigitDropSlot[][] answerRows;       // subtraction rows (optional)
 
-    [Header("UI")]
-    public TMP_Text divisorLabel;               // "46 )"
+    // -------------------------------------------------
+    // BRACKET + LINE UI
+    // -------------------------------------------------
+    [Header("Bracket / Line UI")]
+    public TMP_Text rightBracketText;          // the ")" character from LMBuilder
+    public RectTransform divisionLine;         // horizontal bar above dividend
+
+    // -------------------------------------------------
+    // OTHER UI
+    // -------------------------------------------------
+    [Header("Instructions")]
     public TMP_Text instructionText;
 
-    // internal state
+    // -------------------------------------------------
+    // INTERNAL STATE
+    // -------------------------------------------------
     int divisor;
     int[] dividendDigits;
     int stepIndex = 0;
 
     void Start()
     {
-        instructionText.text = "Fill dividend, divisor, then press Step.";
+        if (instructionText != null)
+            instructionText.text = "Put divisor and dividend digits, then press Step.";
+
+        // Hide the line until numbers are validated
+        if (divisionLine != null)
+            divisionLine.gameObject.SetActive(false);
     }
 
-    // ------------------------------------------------------
+    // -------------------------------------------------
     // STEP BUTTON
-    // ------------------------------------------------------
+    // -------------------------------------------------
     public void Step()
     {
-        if (!LoadNumbers())
-            return;
-
-        switch (stepIndex)
+        // First time pressed: validate input
+        if (stepIndex == 0)
         {
-            case 0: StepDivideFirst(); break;
-            case 1: StepSubtract(); break;
-            case 2: StepBringDown(); break;
-            default:
-                instructionText.text = "Division complete.";
-                break;
+            if (!LoadNumbers())
+                return;
+
+            // Show division bar after numbers confirmed
+            if (divisionLine != null)
+                divisionLine.gameObject.SetActive(true);
+
+            if (instructionText != null)
+                instructionText.text = "Now step through the division...";
         }
 
+        Debug.Log($"LongDivision Step {stepIndex}");
         stepIndex++;
     }
 
-    // ------------------------------------------------------
-    // READ DIVISOR + DIVIDEND FROM UI SLOTS
-    // ------------------------------------------------------
+    // -------------------------------------------------
+    // Reads divisor + dividend
+    // -------------------------------------------------
     bool LoadNumbers()
     {
-        // ---------- Divisor ----------
-        string ds = divisorLabel.text.Replace(")", "").Trim();
-        if (!int.TryParse(ds, out divisor))
+        // Must have two digits in divisor
+        if (divisorSlots == null || divisorSlots.Length < 2)
         {
-            instructionText.text = "Invalid divisor.";
+            if (instructionText != null)
+                instructionText.text = "Divisor row missing.";
             return false;
         }
 
-        // ---------- Dividend ----------
-        string s = "";
-        foreach (var slot in bottomInputSlots)
+        if (!TryReadDigit(divisorSlots[0], out int d1) ||
+            !TryReadDigit(divisorSlots[1], out int d2))
         {
-            if (!string.IsNullOrWhiteSpace(slot.slotText.text))
-                s += slot.slotText.text;
-        }
-
-        if (s.Length == 0 || !int.TryParse(s, out _))
-        {
-            instructionText.text = "Place digits for dividend.";
+            if (instructionText != null)
+                instructionText.text = "Fill BOTH divisor digits.";
             return false;
         }
 
-        // Convert digits → array
-        dividendDigits = new int[s.Length];
-        for (int i = 0; i < s.Length; i++)
-            dividendDigits[i] = s[i] - '0';
+        divisor = d1 * 10 + d2;
 
+        // Read dividend
+        if (dividendSlots == null || dividendSlots.Length == 0)
+        {
+            if (instructionText != null)
+                instructionText.text = "Dividend row missing.";
+            return false;
+        }
+
+        var list = new System.Collections.Generic.List<int>();
+        foreach (var slot in dividendSlots)
+        {
+            if (TryReadDigit(slot, out int val))
+                list.Add(val);
+        }
+
+        if (list.Count == 0)
+        {
+            if (instructionText != null)
+                instructionText.text = "Put at least one digit in the dividend.";
+            return false;
+        }
+
+        dividendDigits = list.ToArray();
+
+        Debug.Log($"Loaded divisor = {divisor}, dividend = {string.Join("", dividendDigits)}");
         return true;
     }
 
-    // ------------------------------------------------------
-    // STEP 1 — Divide first two digits
-    // Example: 46 ) 2534 → take 25
-    // ------------------------------------------------------
-    void StepDivideFirst()
+    // -------------------------------------------------
+    // Reads a single slot
+    // -------------------------------------------------
+    bool TryReadDigit(DigitDropSlot slot, out int value)
     {
-        if (dividendDigits.Length < 2)
+        value = 0;
+
+        if (slot == null || slot.slotText == null)
+            return false;
+
+        string t = slot.slotText.text;
+        if (string.IsNullOrWhiteSpace(t))
+            return false;
+
+        if (int.TryParse(t, out int v))
         {
-            instructionText.text = "Dividend too small.";
-            return;
+            value = v;
+            return true;
         }
 
-        int first = dividendDigits[0];
-        int second = dividendDigits[1];
-        int leading = first * 10 + second;  // 25
-
-        int q = leading / divisor;          // 0 in this example
-        int product = q * divisor;          // 0
-
-        // place quotient over second digit position
-        topInputSlots[1].slotText.text = q.ToString();
-
-        // place product row
-        answerRows[0][1].slotText.text = product.ToString();
-
-        instructionText.text = $"{leading} ÷ {divisor} = {q}";
-    }
-
-    // ------------------------------------------------------
-    // STEP 2 — Subtract
-    // Example: 25 - 0 = 25
-    // ------------------------------------------------------
-    void StepSubtract()
-    {
-        int leading = dividendDigits[0] * 10 + dividendDigits[1];
-        int q = leading / divisor;
-        int product = q * divisor;
-
-        int remainder = leading - product;
-
-        answerRows[1][1].slotText.text = remainder.ToString();
-
-        instructionText.text = $"{leading} − {product} = {remainder}";
-    }
-
-    // ------------------------------------------------------
-    // STEP 3 — Bring down next digit
-    // Example: remainder 25 → bring down digit 3 → 253
-    // ------------------------------------------------------
-    void StepBringDown()
-    {
-        int leading = dividendDigits[0] * 10 + dividendDigits[1];
-        int q = leading / divisor;
-        int product = q * divisor;
-        int remainder = leading - product;
-
-        int nextDigit = dividendDigits.Length > 2 ? dividendDigits[2] : 0;
-
-        int newNumber = remainder * 10 + nextDigit;
-
-        answerRows[2][2].slotText.text = newNumber.ToString();
-
-        instructionText.text = $"Bring down {nextDigit} → {newNumber}";
+        return false;
     }
 }
