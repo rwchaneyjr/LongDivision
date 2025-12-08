@@ -91,7 +91,7 @@ public class LongDivision : MonoBehaviour
         }
 
         // ----------------------------------------------------
-        // STEP 3 — MULTIPLY AND WRITE "-product"
+        // STEP 3 — MULTIPLY AND WRITE "-product" (SHIFTED LEFT)
         // ----------------------------------------------------
         if (stepIndex == 3)
         {
@@ -99,7 +99,8 @@ public class LongDivision : MonoBehaviour
             int q = int.Parse(quotientSlots[quotientPos].slotText.text);
             int product = q * divisor;
 
-            int outCol = workCol + 1;
+            // SHIFT ONE PLACE LEFT
+            int outCol = workCol;  // Changed from workCol + 1
 
             WriteText("-", answerRowIndex, outCol - 1);
             WriteNumber(product, answerRowIndex, outCol);
@@ -109,7 +110,7 @@ public class LongDivision : MonoBehaviour
         }
 
         // ----------------------------------------------------
-        // STEP 4 — SUBTRACT AND WRITE REMAINDER
+        // STEP 4 — SUBTRACT AND WRITE REMAINDER (SHIFTED LEFT)
         // ----------------------------------------------------
         if (stepIndex == 4)
         {
@@ -122,15 +123,15 @@ public class LongDivision : MonoBehaviour
 
             answerRowIndex++;
 
-            // Row 2 stays same
-            WriteNumber(remainder, answerRowIndex, workCol + 1);
+            // SHIFT ONE PLACE LEFT
+            WriteNumber(remainder, answerRowIndex, workCol);  // Changed from workCol + 1
 
             stepIndex = 5;
             return;
         }
 
         // ----------------------------------------------------
-        // STEP 5 — BRING DOWN NEXT DIGIT (SHIFTED ONE LEFT)
+        // STEP 5 — BRING DOWN NEXT DIGIT (LINES UP UNDER REMAINDER)
         // ----------------------------------------------------
         if (stepIndex == 5)
         {
@@ -141,7 +142,7 @@ public class LongDivision : MonoBehaviour
                 int bring = dividend[dividendPos];
                 int newVal = currentValue * 10 + bring;
 
-                // ROW 3: SHIFT ONE PLACE LEFT
+                // LINE UP UNDER THE REMAINDER (same column as row 2)
                 WriteNumber(newVal, answerRowIndex, workCol);
 
                 // Color the last digit red
@@ -152,7 +153,6 @@ public class LongDivision : MonoBehaviour
 
                 currentValue = newVal;
                 dividendPos++;
-                workCol++;  // Move work column right for next cycle
 
                 stepIndex = 1;
                 return;
@@ -161,9 +161,9 @@ public class LongDivision : MonoBehaviour
             {
                 // FINAL REMAINDER
                 answerRowIndex++;
-                WriteNumber(currentValue, answerRowIndex, workCol);
-                ColorDigit(answerRowIndex, workCol, Color.red);
-                WriteText(" R", answerRowIndex, workCol + 1);
+                WriteNumber(currentValue, answerRowIndex, workCol + 1);
+                ColorDigit(answerRowIndex, workCol + 1, Color.red);
+                WriteText(" R", answerRowIndex, workCol + 2);
             }
         }
     }
