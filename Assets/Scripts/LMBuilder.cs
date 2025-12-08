@@ -24,7 +24,6 @@ public class LMBuilder : MonoBehaviour
     [Header("References")]
     public LongDivision longDivision;
 
-    // Built arrays
     DigitDropSlot[] divisorSlots;
     DigitDropSlot[] dividendSlots;
     DigitDropSlot[] quotientSlots;
@@ -43,7 +42,6 @@ public class LMBuilder : MonoBehaviour
         BuildSubtractionRows();
         BuildDigitTray();
 
-        // Give the arrays to LongDivision
         longDivision.divisorSlots = divisorSlots;
         longDivision.dividendSlots = dividendSlots;
         longDivision.quotientSlots = quotientSlots;
@@ -51,8 +49,6 @@ public class LMBuilder : MonoBehaviour
 
         Debug.Log("LMBuilder: Board created.");
     }
-
-    // ----------------------------------------------------
 
     void BuildDivisorSlots()
     {
@@ -95,9 +91,10 @@ public class LMBuilder : MonoBehaviour
 
     void BuildSubtractionRows()
     {
-        subtractionRows = new DigitDropSlot[3][];
+        // Changed from 3 to 6 rows to accommodate full long division work
+        subtractionRows = new DigitDropSlot[6][];
 
-        for (int r = 0; r < 3; r++)
+        for (int r = 0; r < 6; r++)
         {
             subtractionRows[r] = new DigitDropSlot[9];
 
@@ -117,9 +114,6 @@ public class LMBuilder : MonoBehaviour
             }
         }
     }
-
-    // ----------------------------------------------------
-    // Digit Tray
 
     void BuildDigitTray()
     {
