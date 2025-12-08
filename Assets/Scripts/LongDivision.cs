@@ -145,12 +145,14 @@ public class LongDivision : MonoBehaviour
         // ----------------------------------------------------
         // STEP 5 — BRING DOWN NEXT DIGIT (REPLACE REMAINDER ROW)
         // ----------------------------------------------------
+        // ----------------------------------------------------
+        // STEP 5 — BRING DOWN NEXT DIGIT (REPLACE REMAINDER ROW)
+        // ----------------------------------------------------
         if (stepIndex == 5)
         {
             if (dividendPos < dividend.Length)
             {
                 // DON'T increment answerRowIndex - reuse the current row
-                // answerRowIndex stays same to REPLACE the remainder
 
                 int bring = dividend[dividendPos];
                 int newVal = currentValue * 10 + bring;
@@ -173,12 +175,18 @@ public class LongDivision : MonoBehaviour
             }
             else
             {
-                // FINAL REMAINDER
-                answerRowIndex++;
-                WriteNumber(currentValue, answerRowIndex, workCol + 1);
-                ColorDigit(answerRowIndex, workCol + 1, Color.red);
-                WriteText(" R", answerRowIndex, workCol + 2);
+                // FINAL REMAINDER - only write once
+                if (currentValue > 0)
+                {
+                    answerRowIndex++;
+                    WriteNumber(currentValue, answerRowIndex, workCol + 1);
+                    ColorDigit(answerRowIndex, workCol + 1, Color.red);
+                    WriteText("R", answerRowIndex, workCol + 2);
+                }
+                instructionText.text = "Done!";
+                stepIndex = -1;  // Stop processing
             }
+            return;
         }
     }
 
