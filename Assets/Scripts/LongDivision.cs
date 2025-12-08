@@ -133,6 +133,9 @@ public class LongDivision : MonoBehaviour
         // ----------------------------------------------------
         // STEP 5 — BRING DOWN NEXT DIGIT (LINES UP UNDER REMAINDER)
         // ----------------------------------------------------
+        // ----------------------------------------------------
+        // STEP 5 — BRING DOWN NEXT DIGIT (LINES UP UNDER REMAINDER)
+        // ----------------------------------------------------
         if (stepIndex == 5)
         {
             if (dividendPos < dividend.Length)
@@ -153,6 +156,7 @@ public class LongDivision : MonoBehaviour
 
                 currentValue = newVal;
                 dividendPos++;
+                workCol++;  // INCREMENT workCol so next cycle shifts right
 
                 stepIndex = 1;
                 return;
@@ -166,6 +170,7 @@ public class LongDivision : MonoBehaviour
                 WriteText(" R", answerRowIndex, workCol + 2);
             }
         }
+
     }
 
     // ----------------------------------------------------
