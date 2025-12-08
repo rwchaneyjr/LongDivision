@@ -3,139 +3,201 @@ using TMPro;
 
 public class LongDivision : MonoBehaviour
 {
-    // -------------------------------------------------
-    // ROWS OF DIGITS (hooked up by LMBuilder at runtime)
-    // -------------------------------------------------
     [Header("Board Digit Rows")]
-    public DigitDropSlot[] divisorSlots;       // left of bracket (e.g. 4, 6)
-    public DigitDropSlot[] dividendSlots;      // right of bracket (all dividend digits)
-    public DigitDropSlot[] quotientSlots;      // top row (final answer / quotient)
-    public DigitDropSlot[][] answerRows;       // subtraction rows (optional)
+    public DigitDropSlot[] divisorSlots;    // length 4
+    public DigitDropSlot[] dividendSlots;   // length 4
+    public DigitDropSlot[] quotientSlots;   // length 9
+    public DigitDropSlot[][] answerRows;    // 3 rows of 9 columns
 
-    // -------------------------------------------------
-    // BRACKET + LINE UI
-    // -------------------------------------------------
-    [Header("Bracket / Line UI")]
-    public TMP_Text rightBracketText;          // the ")" character from LMBuilder
-    public RectTransform divisionLine;         // horizontal bar above dividend
-
-    // -------------------------------------------------
-    // OTHER UI
-    // -------------------------------------------------
     [Header("Instructions")]
     public TMP_Text instructionText;
 
-    // -------------------------------------------------
-    // INTERNAL STATE
-    // -------------------------------------------------
+    // internal math data
     int divisor;
-    int[] dividendDigits;
+    int[] dividend;
     int stepIndex = 0;
+
+    int dividendPos = 0;
+    int quotientPos = 0;
+    int answerRowIndex = 0;
+    int currentValue = 0;
 
     void Start()
     {
-        if (instructionText != null)
-            instructionText.text = "Put divisor and dividend digits, then press Step.";
-
-        // Hide the line until numbers are validated
-        if (divisionLine != null)
-            divisionLine.gameObject.SetActive(false);
+        if (instructionText)
+            instructionText.text = "Drop divisor (4 digits) & dividend (4 digits). Then press Step.";
     }
 
-    // -------------------------------------------------
-    // STEP BUTTON
-    // -------------------------------------------------
+    // ---------------------------------------------------------
+
     public void Step()
     {
-        // First time pressed: validate input
+        // STEP 0 — Load numbers
         if (stepIndex == 0)
         {
             if (!LoadNumbers())
                 return;
 
-            // Show division bar after numbers confirmed
-            if (divisionLine != null)
-                divisionLine.gameObject.SetActive(true);
+            currentValue = dividend[0];
+            dividendPos = 1;
 
-            if (instructionText != null)
-                instructionText.text = "Now step through the division...";
+            HighlightDividendDigit(0);
+
+            stepIndex = 1;
+            return;
         }
 
-        Debug.Log($"LongDivision Step {stepIndex}");
-        stepIndex++;
+        // STEP 1 — Bring down digits until currentValue >= divisor
+        if (stepIndex == 1)
+        {
+            while (currentValue < divisor && dividendPos < dividend.Length)
+            {
+                currentValue = currentValue * 10 + dividend[dividendPos];
+                HighlightDividendDigit(dividendPos);
+                dividendPos++;
+            }
+
+            if (currentValue < divisor)
+            {
+                instructionText.text = "No more digits — done.";
+                return;
+            }
+
+            stepIndex = 2;
+            return;
+        }
+
+        // STEP 2 — Compute quotient digit
+        if (stepIndex == 2)
+        {
+            int q = currentValue / divisor;
+
+            quotientSlots[quotientPos].slotText.text = q.ToString();
+            quotientPos++;
+
+            instructionText.text = $"Divide: {currentValue} ÷ {divisor} = {q}";
+
+            stepIndex = 3;
+            return;
+        }
+
+        // STEP 3 — Multiply q × divisor and write to row
+        if (stepIndex == 3)
+        {
+            int q = int.Parse(quotientSlots[quotientPos - 1].slotText.text);
+            int product = q * divisor;
+
+            WriteNumberToRow(product, answerRowIndex);
+
+            instructionText.text = $"{q} × {divisor} = {product}";
+
+            stepIndex = 4;
+            return;
+        }
+
+        // STEP 4 — Subtract
+        if (stepIndex == 4)
+        {
+            int q = int.Parse(quotientSlots[quotientPos - 1].slotText.text);
+            int product = q * divisor;
+
+            int remainder = currentValue - product;
+            currentValue = remainder;
+
+            answerRowIndex++;
+
+            instructionText.text = $"{currentValue + product} - {product} = {remainder}";
+
+            stepIndex = 5;
+            return;
+        }
+
+        // STEP 5 — Bring down next digit
+        if (stepIndex == 5)
+        {
+            if (dividendPos < dividend.Length)
+            {
+                HighlightDividendDigit(dividendPos);
+                currentValue = currentValue * 10 + dividend[dividendPos];
+                dividendPos++;
+
+                instructionText.text = $"Bring down → now {currentValue}";
+            }
+            else
+            {
+                instructionText.text = $"Done. Remainder = {currentValue}";
+            }
+
+            stepIndex = 1;
+            return;
+        }
     }
 
-    // -------------------------------------------------
-    // Reads divisor + dividend
-    // -------------------------------------------------
+    // ---------------------------------------------------------
+
     bool LoadNumbers()
     {
-        // Must have two digits in divisor
-        if (divisorSlots == null || divisorSlots.Length < 2)
+        // divisor is 4 digits (T1–T4)
+        divisor = 0;
+
+        for (int i = 0; i < 4; i++)
         {
-            if (instructionText != null)
-                instructionText.text = "Divisor row missing.";
-            return false;
+            if (!TryReadDigit(divisorSlots[i], out int v))
+            {
+                instructionText.text = "Please fill ALL 4 divisor slots.";
+                return false;
+            }
+
+            divisor = divisor * 10 + v;
         }
 
-        if (!TryReadDigit(divisorSlots[0], out int d1) ||
-            !TryReadDigit(divisorSlots[1], out int d2))
+        // dividend is 4 digits (T6–T9)
+        dividend = new int[4];
+
+        for (int i = 0; i < 4; i++)
         {
-            if (instructionText != null)
-                instructionText.text = "Fill BOTH divisor digits.";
-            return false;
+            if (!TryReadDigit(dividendSlots[i], out int v))
+            {
+                instructionText.text = "Please fill ALL 4 dividend slots.";
+                return false;
+            }
+
+            dividend[i] = v;
         }
 
-        divisor = d1 * 10 + d2;
-
-        // Read dividend
-        if (dividendSlots == null || dividendSlots.Length == 0)
-        {
-            if (instructionText != null)
-                instructionText.text = "Dividend row missing.";
-            return false;
-        }
-
-        var list = new System.Collections.Generic.List<int>();
-        foreach (var slot in dividendSlots)
-        {
-            if (TryReadDigit(slot, out int val))
-                list.Add(val);
-        }
-
-        if (list.Count == 0)
-        {
-            if (instructionText != null)
-                instructionText.text = "Put at least one digit in the dividend.";
-            return false;
-        }
-
-        dividendDigits = list.ToArray();
-
-        Debug.Log($"Loaded divisor = {divisor}, dividend = {string.Join("", dividendDigits)}");
         return true;
     }
 
-    // -------------------------------------------------
-    // Reads a single slot
-    // -------------------------------------------------
-    bool TryReadDigit(DigitDropSlot slot, out int value)
+    bool TryReadDigit(DigitDropSlot slot, out int val)
     {
-        value = 0;
+        val = 0;
 
         if (slot == null || slot.slotText == null)
             return false;
 
-        string t = slot.slotText.text;
-        if (string.IsNullOrWhiteSpace(t))
-            return false;
+        return int.TryParse(slot.slotText.text, out val);
+    }
 
-        if (int.TryParse(t, out int v))
+    void HighlightDividendDigit(int index)
+    {
+        for (int i = 0; i < dividendSlots.Length; i++)
         {
-            value = v;
-            return true;
+            if (i == index)
+                dividendSlots[i].SetHighlight(Color.yellow);
+            else
+                dividendSlots[i].ClearHighlight();
         }
+    }
 
-        return false;
+    void WriteNumberToRow(int value, int row)
+    {
+        string s = value.ToString();
+
+        int colStart = answerRows[row].Length - s.Length;
+
+        for (int i = 0; i < s.Length; i++)
+        {
+            answerRows[row][colStart + i].slotText.text = s[i].ToString();
+        }
     }
 }

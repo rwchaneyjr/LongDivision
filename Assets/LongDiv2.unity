@@ -882,7 +882,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 2214.8643, y: 1729}
-  m_SizeDelta: {x: 200, y: 200}
+  m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &177276805
 GameObject:
@@ -2223,7 +2223,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -190, y: 1451}
+  m_AnchoredPosition: {x: -158, y: 1486}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &315712976
@@ -2246,7 +2246,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: (
+  m_text: )
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2273,8 +2273,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 150
-  m_fontSizeBase: 150
+  m_fontSize: 190
+  m_fontSizeBase: 190
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -4700,8 +4700,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1991.8644, y: 1729}
-  m_SizeDelta: {x: 200, y: 200}
+  m_AnchoredPosition: {x: 1967, y: 1739}
+  m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &688625232
 GameObject:
@@ -8121,12 +8121,9 @@ MonoBehaviour:
   draggableDigitPrefab: {fileID: 5842162139008068152, guid: e3645e03be535d540b4ed90215b2c034, type: 3}
   quotientRowParent: {fileID: 1860550093}
   divisorRowParent: {fileID: 389136812}
-  dividendRowParent: {fileID: 923551113}
+  dividendRowParent: {fileID: 687026413}
   subtractionRowsParent: {fileID: 1783280501}
   digitTrayParent: {fileID: 1373445404}
-  rightBracketText: {fileID: 0}
-  divisionLine: {fileID: 229266119}
-  maxDigits: 9
   cellSize: 200
   cellSpacing: 20
   rowSpacing: 220
@@ -9286,16 +9283,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   divisorSlots:
-  - {fileID: 883810146}
-  - {fileID: 883810146}
-  - {fileID: 74656252}
-  - {fileID: 228491467}
+  - {fileID: 630016356}
+  - {fileID: 8275741135931893548}
+  - {fileID: 1702059489}
+  - {fileID: 1857386003}
   dividendSlots:
-  - {fileID: 1990706757}
-  - {fileID: 177276807}
-  - {fileID: 2130983376}
-  - {fileID: 389113984}
-  - {fileID: 1738881859}
+  - {fileID: 804445896}
+  - {fileID: 1941369963}
+  - {fileID: 1872644857}
+  - {fileID: 2055199263}
   quotientSlots:
   - {fileID: 1860550096}
   - {fileID: 281767470}
@@ -9306,8 +9302,6 @@ MonoBehaviour:
   - {fileID: 458989819}
   - {fileID: 656021517}
   - {fileID: 730050530}
-  rightBracketText: {fileID: 315712976}
-  divisionLine: {fileID: 389136812}
   instructionText: {fileID: 715558195}
 --- !u!1 &1245642261
 GameObject:
@@ -12080,9 +12074,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LongMath, Assembly-CSharp
-        m_MethodName: StepThrough
+      - m_Target: {fileID: 1236064399}
+        m_TargetAssemblyTypeName: LongDivision, Assembly-CSharp
+        m_MethodName: Step
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13532,7 +13526,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1702059487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15459,7 +15453,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1935756145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17592,11 +17586,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4884748480351185261, guid: c83cf4fc1bd5b16428e3645387de72b2, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 200
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 4884748480351185261, guid: c83cf4fc1bd5b16428e3645387de72b2, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 200
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 4884748480351185261, guid: c83cf4fc1bd5b16428e3645387de72b2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -18602,7 +18596,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 656505089303669158, guid: 1e7432af5f0739c48b83172d53e3070b, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3055558952707685683, guid: 1e7432af5f0739c48b83172d53e3070b, type: 3}
       propertyPath: m_Pivot.x
@@ -19143,11 +19137,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2587486202288758791, guid: 325342bd818bfae41a87119685c92fe9, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 200
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 2587486202288758791, guid: 325342bd818bfae41a87119685c92fe9, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 200
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 2587486202288758791, guid: 325342bd818bfae41a87119685c92fe9, type: 3}
       propertyPath: m_LocalPosition.x
@@ -19179,11 +19173,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2587486202288758791, guid: 325342bd818bfae41a87119685c92fe9, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1991.8644
+      value: 1967
       objectReference: {fileID: 0}
     - target: {fileID: 2587486202288758791, guid: 325342bd818bfae41a87119685c92fe9, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1729
+      value: 1739
       objectReference: {fileID: 0}
     - target: {fileID: 2587486202288758791, guid: 325342bd818bfae41a87119685c92fe9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -19203,7 +19197,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3522533891630565015, guid: 325342bd818bfae41a87119685c92fe9, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 0}
