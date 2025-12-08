@@ -65,9 +65,9 @@ public class LMBuilder : MonoBehaviour
 
     void BuildDividendSlots()
     {
-        dividendSlots = new DigitDropSlot[4];
+        dividendSlots = new DigitDropSlot[5];  // Changed from 4 to 5
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 5; i++)  // Changed from 4 to 5
         {
             var slot = Instantiate(digitSlotPrefab, dividendRowParent);
             var rt = slot.GetComponent<RectTransform>();
@@ -91,7 +91,6 @@ public class LMBuilder : MonoBehaviour
 
     void BuildSubtractionRows()
     {
-        // Changed from 3 to 6 rows to accommodate full long division work
         subtractionRows = new DigitDropSlot[6][];
 
         for (int r = 0; r < 6; r++)
