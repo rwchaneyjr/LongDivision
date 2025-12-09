@@ -4,32 +4,49 @@ using TMPro;
 public class LongDivision : MonoBehaviour
 {
     [Header("Board Digit Rows")]
-    public DigitDropSlot[] divisorSlots;      // col 0–1 (2-digit divisor)
-    public DigitDropSlot[] dividendSlots;     // col 3–5 (345)
-    public DigitDropSlot[] quotientSlots;     // col 3–8 (for 28)
-    public DigitDropSlot[][] answerRows;      // rows for work
+    public DigitDropSlot[] divisorSlots;
+    public DigitDropSlot[] dividendSlots;
+    public DigitDropSlot[] quotientSlots;
+    public DigitDropSlot[][] answerRows;
 
-    [Header("Instructions")]
+    [Header("UI")]
     public TMP_Text instructionText;
+    public TMP_Text explanationText;   // narration text (orange panel)
 
+    // Internal state
     int divisor;
     int[] dividend;
 
     int stepIndex = 0;
     int dividendPos = 0;
-    int quotientPos = 3;   // QUOTIENT STARTS ABOVE COL 3
+    int quotientPos = 3;
     int answerRowIndex = 0;
 
     int currentValue = 0;
+    int workCol = 4;
 
-    int workCol = 4;   // THE DIGIT WE OPERATE ON
+    bool finalRemainderWritten = false;
 
     void Start()
     {
         if (instructionText)
             instructionText.text = "Drop divisor & dividend, then press Step.";
+
+        Narrate("Drag in the divisor and dividend, then press Step.");
     }
 
+    // ================================================================
+    // NARRATION HELPER
+    // ================================================================
+    void Narrate(string msg)
+    {
+        if (explanationText != null)
+            explanationText.text = msg;
+    }
+
+    // ================================================================
+    // STEP BUTTON LOGIC
+    // ================================================================
     public void Step()
     {
         // ----------------------------------------------------
@@ -45,12 +62,18 @@ public class LongDivision : MonoBehaviour
 
             HighlightDividendDigit(0);
 
+            Narrate(
+                "Step 1:\n" +
+                "Start by taking the first digit(s) of the dividend.\n" +
+                "Current value: " + currentValue
+            );
+
             stepIndex = 1;
             return;
         }
 
         // ----------------------------------------------------
-        // STEP 1 — ACCUMULATE UNTIL >= DIVISOR
+        // STEP 1 — BUILD A VALUE >= DIVISOR
         // ----------------------------------------------------
         if (stepIndex == 1)
         {
@@ -61,12 +84,14 @@ public class LongDivision : MonoBehaviour
                 dividendPos++;
             }
 
-            if (currentValue < divisor)
+            Narrate(
+                "Bringing down digits until the number is large enough to divide.\n" +
+                "Current working number: " + currentValue
+            );
+
+            if (currentValue < divisor && dividendPos >= dividend.Length)
             {
-                // final remainder
-                WriteNumber(currentValue, answerRowIndex, workCol + 1);
-                ColorDigit(answerRowIndex, workCol + 1, Color.red);
-                WriteText(" R", answerRowIndex, workCol + 2);
+                WriteFinalRemainderRow();
                 return;
             }
 
@@ -75,53 +100,53 @@ public class LongDivision : MonoBehaviour
         }
 
         // ----------------------------------------------------
-        // STEP 2 — WRITE QUOTIENT DIGIT (SHIFTED ONE RIGHT)
+        // STEP 2 — WRITE QUOTIENT DIGIT
         // ----------------------------------------------------
         if (stepIndex == 2)
         {
             int q = currentValue / divisor;
-
-            // SHIFT QUOTIENT ONE PLACE RIGHT
             quotientSlots[quotientPos + 1].slotText.text = q.ToString();
+            quotientPos++;
 
-            quotientPos++;   // Move to next position
+            Narrate(
+                "Divide:\n" +
+                currentValue + " ÷ " + divisor + " = " + q + "\n" +
+                "Write " + q + " in the quotient line."
+            );
 
             stepIndex = 3;
             return;
         }
 
         // ----------------------------------------------------
-        // STEP 3 — MULTIPLY AND WRITE "-product" (SHIFTED LEFT)
+        // STEP 3 — MULTIPLY & WRITE PRODUCT
         // ----------------------------------------------------
         if (stepIndex == 3)
         {
-            // Read from quotientPos (which now points to where we wrote)
             int q = int.Parse(quotientSlots[quotientPos].slotText.text);
             int product = q * divisor;
 
-            // INCREMENT ROW for second cycle (after row 2 where 105 is)
             if (answerRowIndex > 0)
                 answerRowIndex++;
 
-            // SHIFT ONE PLACE LEFT
-            int outCol = workCol;
+            WriteText("-", answerRowIndex, workCol - 1);
+            WriteNumber(product, answerRowIndex, workCol);
 
-            WriteText("-", answerRowIndex, outCol - 1);
-            WriteNumber(product, answerRowIndex, outCol);
+            Narrate(
+                "Multiply:\n" +
+                divisor + " × " + q + " = " + product + "\n" +
+                "Write " + product + " under the working number."
+            );
 
             stepIndex = 4;
             return;
         }
 
         // ----------------------------------------------------
-        // STEP 4 — SUBTRACT AND WRITE REMAINDER (SHIFTED LEFT)
-        // ----------------------------------------------------
-        // ----------------------------------------------------
-        // STEP 4 — SUBTRACT AND WRITE REMAINDER (SHIFTED LEFT)
+        // STEP 4 — SUBTRACT
         // ----------------------------------------------------
         if (stepIndex == 4)
         {
-            // Read from quotientPos (same as STEP 3)
             int q = int.Parse(quotientSlots[quotientPos].slotText.text);
             int product = q * divisor;
 
@@ -129,71 +154,93 @@ public class LongDivision : MonoBehaviour
             currentValue = remainder;
 
             answerRowIndex++;
-
-            // SHIFT ONE PLACE LEFT
             WriteNumber(remainder, answerRowIndex, workCol);
+
+            Narrate(
+                "Subtract:\n" +
+                "Remainder = " + remainder
+            );
 
             stepIndex = 5;
             return;
         }
+
         // ----------------------------------------------------
-        // STEP 5 — BRING DOWN NEXT DIGIT (LINES UP UNDER REMAINDER)
-        // ----------------------------------------------------
-        // ----------------------------------------------------
-        // STEP 5 — BRING DOWN NEXT DIGIT (LINES UP UNDER REMAINDER)
-        // ----------------------------------------------------
-        // ----------------------------------------------------
-        // STEP 5 — BRING DOWN NEXT DIGIT (REPLACE REMAINDER ROW)
-        // ----------------------------------------------------
-        // ----------------------------------------------------
-        // STEP 5 — BRING DOWN NEXT DIGIT (REPLACE REMAINDER ROW)
+        // STEP 5 — BRING DOWN NEXT DIGIT OR FINISH
         // ----------------------------------------------------
         if (stepIndex == 5)
         {
             if (dividendPos < dividend.Length)
             {
-                // DON'T increment answerRowIndex - reuse the current row
-
                 int bring = dividend[dividendPos];
                 int newVal = currentValue * 10 + bring;
 
-                // REPLACE the remainder row with new number
                 WriteNumber(newVal, answerRowIndex, workCol);
 
-                // Color the last digit red
                 int numDigits = GetDigitCount(newVal);
                 ColorDigit(answerRowIndex, workCol + numDigits - 1, Color.red);
 
                 HighlightDividendDigit(dividendPos);
 
+                Narrate(
+                    "Bring down next digit:\n" +
+                    "New working number: " + newVal + "\n" +
+                    "Prepare to divide again."
+                );
+
                 currentValue = newVal;
                 dividendPos++;
-                workCol++;  // INCREMENT workCol so next cycle shifts right
+                workCol++;
 
                 stepIndex = 1;
                 return;
             }
+
+            if (!finalRemainderWritten && currentValue > 0)
+            {
+                WriteFinalRemainderRow();
+            }
             else
             {
-                // FINAL REMAINDER - only write once
-                if (currentValue > 0)
-                {
-                    answerRowIndex++;
-                    WriteNumber(currentValue, answerRowIndex, workCol + 1);
-                    ColorDigit(answerRowIndex, workCol + 1, Color.red);
-                    WriteText("R", answerRowIndex, workCol + 2);
-                }
-                instructionText.text = "Done!";
-                stepIndex = -1;  // Stop processing
+                Narrate("Division finished. No remainder.");
+                if (instructionText != null)
+                    instructionText.text = "Done!";
+                stepIndex = -1;
             }
+
             return;
         }
     }
 
-    // ----------------------------------------------------
-    // SUPPORT FUNCTIONS
-    // ----------------------------------------------------
+    // ================================================================
+    // FINAL REMAINDER ROW (ONLY WRITES ONCE)
+    // ================================================================
+    void WriteFinalRemainderRow()
+    {
+        if (finalRemainderWritten)
+            return;
 
+        finalRemainderWritten = true;
+
+        answerRowIndex++;
+
+        // write remainder
+        WriteNumber(currentValue, answerRowIndex, workCol + 1);
+        ColorDigit(answerRowIndex, workCol + 1, Color.red);
+
+        // write R
+        WriteText("R", answerRowIndex, workCol + 2);
+
+        // WRITE FINAL ANSWER IN BOTH TEXT FIELDS
+        WriteFinalAnswerText();
+
+        stepIndex = -1;   // stop stepping
+    }
+
+
+    // ================================================================
+    // SUPPORT FUNCTIONS
+    // ================================================================
     bool LoadNumbers()
     {
         var div = new System.Collections.Generic.List<int>();
@@ -204,6 +251,7 @@ public class LongDivision : MonoBehaviour
         if (div.Count < 2)
         {
             instructionText.text = "Need 2-digit divisor.";
+            Narrate("Please enter a 2-digit divisor.");
             return false;
         }
 
@@ -217,6 +265,7 @@ public class LongDivision : MonoBehaviour
         if (dvd.Count == 0)
         {
             instructionText.text = "Enter dividend.";
+            Narrate("Please enter the digits of the dividend.");
             return false;
         }
 
@@ -264,4 +313,32 @@ public class LongDivision : MonoBehaviour
         if (v == 0) return 1;
         return (int)Mathf.Floor(Mathf.Log10(v) + 1);
     }
+
+    // ================================================================
+    // FINAL ANSWER
+    // ================================================================
+    void WriteFinalAnswerText()
+    {
+        // Build quotient string
+        string qString = "";
+        foreach (var slot in quotientSlots)
+        {
+            if (slot != null && slot.slotText != null && slot.slotText.text != "")
+                qString += slot.slotText.text;
+        }
+
+        string rString = currentValue.ToString();
+
+        // 1️⃣ Write to narration panel (orange box)
+        Narrate(
+            "Final Answer:\n" +
+            "Quotient = " + qString + "\n" +
+            "Remainder = " + rString
+        );
+
+        // 2️⃣ Write to instruction bar (top)
+        if (instructionText != null)
+            instructionText.text = qString + " R" + rString;
+    }
+
 }

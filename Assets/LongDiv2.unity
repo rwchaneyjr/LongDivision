@@ -5195,7 +5195,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: texrt
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -8674,8 +8674,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -5.7372, y: 69.257}
-  m_SizeDelta: {x: 3954.3, y: 2113.734}
+  m_AnchoredPosition: {x: 4.978, y: 13.009}
+  m_SizeDelta: {x: 3975.729, y: 2354.798}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1103464244
 MonoBehaviour:
@@ -9302,7 +9302,8 @@ MonoBehaviour:
   - {fileID: 458989819}
   - {fileID: 656021517}
   - {fileID: 730050530}
-  instructionText: {fileID: 715558195}
+  instructionText: {fileID: 0}
+  explanationText: {fileID: 715558195}
 --- !u!1 &1245642261
 GameObject:
   m_ObjectHideFlags: 0
@@ -11711,7 +11712,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Step
 
-    Through'
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -12027,8 +12028,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 703, y: 1093}
-  m_SizeDelta: {x: 400, y: 300}
+  m_AnchoredPosition: {x: 814, y: 420}
+  m_SizeDelta: {x: 250, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1576257070
 MonoBehaviour:
@@ -15122,12 +15123,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Put a number between  5 and 1 digit on top
+  m_text: 'THESE ARE THE STEPS IN LONG DIVISION  USE PAPER AND PEN AND YOU CAN DIVIDE
+    ANY NUMBER
 
-    Put a number between 1
-    and 3 digit below it and click step through button to see how  long multiplication
-
-    works'
+    Drag in 2 digits to be divided on the 2nd row near ''(''. The
+    first digit can be 1 to 2 digits in length the other can be 2 to 4 in length'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

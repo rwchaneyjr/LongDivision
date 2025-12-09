@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/LongDiv2.unity
+    guid: 59dc5cd43fab0b645beb5af6644e871e
   m_configObjects: {}
